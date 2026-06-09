@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd \\\"/Users/paul/Documents/Shared/m1shared/agents/InsightMatches SAAS/deskrpg\\\" && SQLITE_PATH=./data/deskrpg.db npx drizzle-kit generate --config=drizzle-sqlite.config.ts 2>&1 && SQLITE_P...",
+  "error": "Exit code 1\nReading config file '/Users/paul/Documents/Shared/m1shared/agents/InsightMatches SAAS/deskrpg/drizzle-sqlite.config.ts'\n29 tables\nchannel_gateway_bindings 5 columns 2 indexes 3 fks\nchannel_members 7 columns 3 indexes 2 fks\nchannels 14 columns 1 indexes 2 fks\ncharacters 6 columns 1 indexes 1 fks\nchat_messages 6 columns 1 indexes 2 fks\ngateway_resources 11 columns 1 indexes 1 fks\ngateway_shares 5 columns 3 indexes 2 fks\ngroup_invites 11 columns 3 indexes 4 fks\ngroup_join_requests 8 col...",
+  "timestamp": "2026-06-09T10:51:45.904Z",
+  "retry_count": 4
+}
