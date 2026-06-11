@@ -95,18 +95,27 @@ export default function AuthPage() {
         <div className="max-w-[360px] w-[90%] pointer-events-auto">
           {/* Title */}
           <div className="text-center mb-4">
-            <h1
-              className="font-black text-white font-mono tracking-[10px]"
-              style={{
-                fontSize: "clamp(28px, 5vw, 42px)",
-                textShadow: "0 0 40px rgba(99,102,241,0.3),0 0 80px rgba(99,102,241,0.1),0 2px 4px rgba(0,0,0,0.8)",
-              }}
-            >
-              DeskRPG
-            </h1>
+            {/* FrontierLabs logo */}
+            <div className="flex justify-center mb-2">
+              <svg viewBox="0 0 400 100" width="280" height="70">
+                <defs>
+                  <linearGradient id="gradFL" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#00cc7e" />
+                    <stop offset="100%" stopColor="#0088ff" />
+                  </linearGradient>
+                </defs>
+                <circle cx="40" cy="50" r="24" fill="rgba(0,136,255,0.08)" stroke="url(#gradFL)" strokeWidth="2"/>
+                <ellipse cx="40" cy="50" rx="10" ry="24" fill="none" stroke="url(#gradFL)" strokeWidth="1.5"/>
+                <ellipse cx="40" cy="50" rx="24" ry="8" fill="none" stroke="url(#gradFL)" strokeWidth="2.5"/>
+                <line x1="40" y1="26" x2="40" y2="74" stroke="url(#gradFL)" strokeWidth="1.5"/>
+                <circle cx="40" cy="50" r="3" fill="#F5A623"/>
+                <text x="75" y="62" fontFamily="'Outfit', system-ui, sans-serif" fontSize="40" fill="#ffffff" fontWeight="700">Frontier</text>
+                <text x="258" y="62" fontFamily="'JetBrains Mono', monospace" fontSize="36" fill="#00cc7e" fontWeight="700">·labs</text>
+              </svg>
+            </div>
             <p
-              className="text-[10px] text-primary-light tracking-[6px] mt-1"
-              style={{ textShadow: "0 0 12px rgba(129,140,248,0.3)" }}
+              className="text-[10px] tracking-[6px] mt-1"
+              style={{ color: "#00cc7e", textShadow: "0 0 12px rgba(0,204,126,0.4)" }}
             >
               {t("auth.heroTagline")}
             </p>

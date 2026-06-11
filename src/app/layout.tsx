@@ -24,11 +24,11 @@ export async function generateMetadata(): Promise<Metadata> {
       .split(",")
       .map((keyword) => keyword.trim())
       .filter(Boolean),
-    authors: [{ name: "Dante Labs", url: "https://dante-labs.com" }],
+    authors: [{ name: "FrontierLabs", url: "https://frontierlabs.io" }],
     openGraph: {
-      title: "DeskRPG",
+      title: "FrontierLabs — The Citadel",
       description: translateServer(locale, "metadata.openGraphDescription"),
-      siteName: "DeskRPG",
+      siteName: "FrontierLabs",
       type: "website",
     },
     icons: {
