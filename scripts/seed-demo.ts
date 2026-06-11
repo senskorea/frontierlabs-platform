@@ -64,6 +64,15 @@ db.prepare(`
 
 console.log("✓ Created channel: EIC Accelerator 2025");
 
+// ── 3b. Add mark as channel member ──────────────────────────────────────────
+
+db.prepare(`
+  INSERT INTO channel_members (id, channel_id, user_id, role, joined_at)
+  VALUES (?, ?, ?, 'member', ?)
+`).run(randomUUID(), channelId, userId, now);
+
+console.log("✓ Added mark as channel member");
+
 // ── 4. NPCs ──────────────────────────────────────────────────────────────────
 
 const AGENTS = [

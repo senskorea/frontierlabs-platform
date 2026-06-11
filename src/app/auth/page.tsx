@@ -253,12 +253,16 @@ export default function AuthPage() {
                 setLoading(true);
                 try {
                   const res = await fetch("/api/auth/demo", { method: "POST" });
+                  const data = await res.json();
                   if (!res.ok) {
-                    const data = await res.json();
                     setError(data.error || "Demo unavailable");
                     return;
                   }
-                  router.push("/characters");
+                  if (data.characterId && data.channelId) {
+                    router.push(`/game?characterId=${data.characterId}&channelId=${data.channelId}`);
+                  } else {
+                    router.push("/characters");
+                  }
                 } catch {
                   setError("Network error");
                 } finally {

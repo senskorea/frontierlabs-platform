@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { users } from "@/db";
+import { users, characters, channels, channelMembers } from "@/db";
 import { signJWT, isSecureCookie } from "@/lib/jwt";
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
@@ -14,9 +14,17 @@ export async function POST() {
     );
   }
 
+  // Get character and EIC channel
+  const [character] = await db.select().from(characters).where(eq(characters.userId, user.id)).limit(1);
+  const [channel] = await db.select().from(channels).where(eq(channels.name, "EIC Accelerator 2025")).limit(1);
+
   const token = await signJWT({ userId: user.id, nickname: user.nickname });
 
-  const response = NextResponse.json({ user: { id: user.id, nickname: user.nickname } });
+  const response = NextResponse.json({
+    user: { id: user.id, nickname: user.nickname },
+    characterId: character?.id ?? null,
+    channelId: channel?.id ?? null,
+  });
   response.cookies.set("token", token, {
     httpOnly: true,
     secure: isSecureCookie(),
