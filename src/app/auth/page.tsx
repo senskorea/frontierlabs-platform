@@ -240,6 +240,42 @@ export default function AuthPage() {
             </form>
             </>
             )}
+          {/* Demo button */}
+          <div className="mt-4 text-center">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex-1 h-px bg-white/10" />
+              <span className="text-xs text-text-dim">or</span>
+              <div className="flex-1 h-px bg-white/10" />
+            </div>
+            <button
+              onClick={async () => {
+                setError("");
+                setLoading(true);
+                try {
+                  const res = await fetch("/api/auth/demo", { method: "POST" });
+                  if (!res.ok) {
+                    const data = await res.json();
+                    setError(data.error || "Demo unavailable");
+                    return;
+                  }
+                  router.push("/characters");
+                } catch {
+                  setError("Network error");
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              disabled={loading}
+              className="w-full py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50 transition-colors"
+              style={{
+                background: "transparent",
+                border: "1px solid rgba(0,204,126,0.4)",
+                color: "#00cc7e",
+              }}
+            >
+              ✦ Try the Demo
+            </button>
+          </div>
           </div>
         </div>
       </div>

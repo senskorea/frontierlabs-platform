@@ -26,13 +26,13 @@ import { resolveNpcResponseChunk, type NpcResponsePayload } from "@/lib/npc-resp
 import { sanitizeNpcResponseText } from "@/lib/task-block-utils.js";
 
 const APP_VERSION = "2026.5.29";
-const BUG_REPORT_BASE_URL = "https://github.com/dandacompany/deskrpg/issues/new";
-const SOURCE_CODE_URL = "https://github.com/dandacompany/deskrpg";
+const BUG_REPORT_BASE_URL = "https://github.com/senskorea/frontierlabs-platform/issues/new";
+const SOURCE_CODE_URL = "https://github.com/senskorea/frontierlabs-platform";
 const LICENSE_URL = `${SOURCE_CODE_URL}/blob/main/LICENSE.md`;
 const THIRD_PARTY_LICENSES_URL = "/third-party-licenses.html";
 const AVATAR_ASSET_CREDITS_URL = "/assets/spritesheets/CREDITS.md";
 const AVATAR_ASSET_LICENSE_URL = "/assets/spritesheets/LICENSE-assets.md";
-const INSTANCE_ID_STORAGE_KEY = "deskrpg.instanceId";
+const INSTANCE_ID_STORAGE_KEY = "frontierlabs.instanceId";
 
 function GameEngineLoading() {
   const t = useT();
@@ -1607,7 +1607,7 @@ function GamePageInner() {
       <div className="fixed top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-2 bg-black/50 backdrop-blur-sm">
         {/* Left: Channel name — Character name */}
         <h1 className="text-lg font-bold">
-          {channel?.name || "DeskRPG"} &mdash; {character?.name}
+          {channel?.name || "FrontierLabs"} &mdash; {character?.name}
         </h1>
 
         {/* Right: grouped controls */}

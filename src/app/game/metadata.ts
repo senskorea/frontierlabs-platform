@@ -5,11 +5,11 @@ import { channelMembers, channels, db, groupMembers } from "@/db";
 import { verifyJWT } from "@/lib/jwt";
 import { summarizeChannelDetailAccess } from "@/lib/rbac/channel-access";
 
-const GAME_PAGE_FALLBACK_TITLE = "DeskRPG";
+const GAME_PAGE_FALLBACK_TITLE = "FrontierLabs";
 
 export function buildGamePageMetadataTitle(channelName: string | null | undefined): string {
   const trimmedName = channelName?.trim();
-  return trimmedName ? `DeskRPG - ${trimmedName}` : GAME_PAGE_FALLBACK_TITLE;
+  return trimmedName ? `FrontierLabs - ${trimmedName}` : GAME_PAGE_FALLBACK_TITLE;
 }
 
 export function canExposeChannelNameForMetadata(args: {
