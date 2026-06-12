@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { users, characters, channels, channelMembers } from "@/db";
+import { users, characters, channels } from "@/db";
 import { signJWT, isSecureCookie } from "@/lib/jwt";
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";

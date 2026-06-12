@@ -3,7 +3,11 @@ import { channels, channelMembers, groupMembers, groups } from "@/db";
 import { NextRequest, NextResponse } from "next/server";
 import { eq, and } from "drizzle-orm";
 import { hashPassword } from "@/lib/password";
-import { getUserId } from "@/lib/internal-rpc";
+import { getUserId as _getUserId } from "@/lib/internal-rpc";
+import { getAuthUserId } from "@/lib/auth-request";
+async function getUserId(req: NextRequest): Promise<string | null> {
+  return getAuthUserId(req);
+}
 import { parseDbJson, parseDbObject } from "@/lib/db-json";
 import { getChannelGatewayBinding } from "@/lib/gateway-resources";
 import { getTaskAutomationConfig } from "@/lib/task-reporting";
@@ -30,7 +34,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const userId = getUserId(req);
+  const userId = await getUserId(req);
   if (!userId) return NextResponse.json({ errorCode: "unauthorized", error: "unauthorized" }, { status: 401 });
 
   const { id } = await params;
@@ -179,7 +183,7 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const userId = getUserId(req);
+  const userId = await getUserId(req);
   if (!userId) return NextResponse.json({ errorCode: "unauthorized", error: "unauthorized" }, { status: 401 });
 
   const { id } = await params;
@@ -282,7 +286,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const userId = getUserId(req);
+  const userId = await getUserId(req);
   if (!userId) return NextResponse.json({ errorCode: "unauthorized", error: "unauthorized" }, { status: 401 });
 
   const { id } = await params;

@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { characters, db, npcs, tasks } from "@/db";
 import { eq, desc } from "drizzle-orm";
+import { getAuthUserId } from "@/lib/auth-request";
+
+async function getUserId(req: NextRequest): Promise<string | null> {
+  return getAuthUserId(req);
+}
 
 export async function GET(req: NextRequest) {
-  const userId = req.headers.get("x-user-id");
+  const userId = await getUserId(req);
   if (!userId) {
     return NextResponse.json({ errorCode: "unauthorized", error: "Unauthorized" }, { status: 401 });
   }
@@ -53,7 +58,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const userId = req.headers.get("x-user-id");
+  const userId = await getUserId(req);
   if (!userId) {
     return NextResponse.json({ errorCode: "unauthorized", error: "Unauthorized" }, { status: 401 });
   }
