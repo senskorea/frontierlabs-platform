@@ -20,7 +20,7 @@ export interface ToolbarProps {
   onToolChange: (tool: Tool) => void;
   onNewMap: () => void;
   onLoad: () => void;
-  onSaveToDeskRPG: () => void;
+  onSaveToFrontierLabs: () => void;
   onSaveAs?: () => void;
   onExportTMJ: () => void;
   onExportTMX: () => void;
@@ -223,7 +223,7 @@ export default function Toolbar({
   onToolChange,
   onNewMap,
   onLoad,
-  onSaveToDeskRPG,
+  onSaveToFrontierLabs,
   onSaveAs,
   onExportTMJ,
   onExportTMX,
@@ -313,7 +313,7 @@ export default function Toolbar({
         <Dropdown label={t('mapEditor.toolbar.file')}>
           <DropdownItem onClick={onNewMap} shortcut="⌘N">{t('mapEditor.project.newProject')}</DropdownItem>
           <DropdownItem onClick={onLoad} shortcut="⌘O">{t('mapEditor.project.openProject')}</DropdownItem>
-          <DropdownItem onClick={onSaveToDeskRPG} shortcut="⌘S">{t('common.save')}</DropdownItem>
+          <DropdownItem onClick={onSaveToFrontierLabs} shortcut="⌘S">{t('common.save')}</DropdownItem>
           <DropdownItem onClick={() => { onSaveAs?.(); }}>{t('mapEditor.project.saveAs')}</DropdownItem>
           <DropdownSeparator />
           <DropdownSubmenu label={t('mapEditor.toolbar.export')}>
@@ -392,7 +392,7 @@ export default function Toolbar({
       <div className="px-2 flex items-center gap-1">
         <Tooltip label={`${t('common.save')} (⌘S)`}>
           <div className="relative">
-            <Button variant="ghost" size="sm" onClick={onSaveToDeskRPG}>
+            <Button variant="ghost" size="sm" onClick={onSaveToFrontierLabs}>
               <Save className="w-4 h-4" />
             </Button>
             {dirty && (

@@ -6,13 +6,13 @@ import {
   canExposeChannelNameForMetadata,
 } from "./metadata";
 
-test("buildGamePageMetadataTitle returns DeskRPG fallback without a channel name", () => {
-  assert.equal(buildGamePageMetadataTitle(null), "DeskRPG");
-  assert.equal(buildGamePageMetadataTitle(""), "DeskRPG");
+test("buildGamePageMetadataTitle returns FrontierLabs fallback without a channel name", () => {
+  assert.equal(buildGamePageMetadataTitle(null), "FrontierLabs");
+  assert.equal(buildGamePageMetadataTitle(""), "FrontierLabs");
 });
 
 test("buildGamePageMetadataTitle formats the channel title when a channel name exists", () => {
-  assert.equal(buildGamePageMetadataTitle("전략 회의실"), "DeskRPG - 전략 회의실");
+  assert.equal(buildGamePageMetadataTitle("전략 회의실"), "FrontierLabs - 전략 회의실");
 });
 
 test("canExposeChannelNameForMetadata matches detail access rules", () => {
