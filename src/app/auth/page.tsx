@@ -253,9 +253,10 @@ export default function AuthPage() {
                 setLoading(true);
                 try {
                   const res = await fetch("/api/auth/demo", { method: "POST" });
-                  const data = await res.json();
+                  let data: { error?: string; characterId?: string; channelId?: string } = {};
+                  try { data = await res.json(); } catch { /* non-JSON response */ }
                   if (!res.ok) {
-                    setError(data.error || "Demo unavailable");
+                    setError(data.error || "Demo unavailable — please try again.");
                     return;
                   }
                   if (data.characterId && data.channelId) {
