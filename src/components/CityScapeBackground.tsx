@@ -432,7 +432,7 @@ export default function CityScapeBackground() {
                   <div className="w-full h-full flex flex-col items-center justify-center animate-screen-shift relative"
                     style={{ background: "linear-gradient(135deg,#1e1b4b,#312e81,#4338ca)" }}>
                     <div className="text-[clamp(8px,1.2vw,14px)] font-black text-indigo-200 font-mono tracking-widest" style={{ textShadow: "0 0 8px rgba(199,210,254,0.5)" }}>
-                      DeskRPG
+                      FrontierLabs
                     </div>
                     <div className="text-[clamp(4px,0.5vw,7px)] text-indigo-400 tracking-widest">{t("auth.subtitle")}</div>
                     <div className="absolute inset-0 pointer-events-none" style={{ background: "repeating-linear-gradient(0deg,transparent 0px,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px)" }} />

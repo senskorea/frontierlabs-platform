@@ -259,7 +259,7 @@ export default function MapEditorLayout({
   useEffect(() => {
     document.title = `${t('mapEditor.toolbar.title')} - ${displayProjectName}`;
     return () => {
-      document.title = 'DeskRPG';
+      document.title = 'FrontierLabs';
     };
   }, [displayProjectName, t]);
 
@@ -1613,7 +1613,7 @@ export default function MapEditorLayout({
         onLoad={() => {
           if (confirmIfDirty()) router.push('/map-editor');
         }}
-        onSaveToDeskRPG={handleSave}
+        onSaveToFrontierLabs={handleSave}
         onExportTMJ={handleExportTMJ}
         onExportTMX={handleExportTMX}
         onExportPNG={handleExportPNG}
