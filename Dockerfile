@@ -116,8 +116,6 @@ RUN if [ "$ENABLE_OPENCODE" = "true" ]; then npm install -g opencode && echo 'Op
 
 # Data directories for adapter auth and workspaces
 RUN mkdir -p /var/deskrpg/users /var/deskrpg/workspaces && chown -R nextjs:nodejs /var/deskrpg
-VOLUME /var/deskrpg/users
-VOLUME /var/deskrpg/workspaces
 ENV DESKRPG_HOME=/app/data
 ENV DESKRPG_DATA_DIR=/var/deskrpg
 ENV INTERNAL_HOSTNAME="0.0.0.0"
