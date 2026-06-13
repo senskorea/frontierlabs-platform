@@ -90,9 +90,10 @@ export async function POST() {
 
     return response;
   } catch (err) {
-    console.error("[demo] failed:", err);
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[demo] failed:", msg);
     return NextResponse.json(
-      { errorCode: "demo_error", error: "Demo unavailable — please try again." },
+      { errorCode: "demo_error", error: `Demo error: ${msg}` },
       { status: 500 },
     );
   }
