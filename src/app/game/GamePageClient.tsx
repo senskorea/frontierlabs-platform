@@ -24,6 +24,7 @@ import type { Task } from "@/components/TaskCard";
 import { getLocalizedErrorMessage, getLocalizedMessage } from "@/lib/i18n/error-codes";
 import { resolveNpcResponseChunk, type NpcResponsePayload } from "@/lib/npc-response-messages";
 import { sanitizeNpcResponseText } from "@/lib/task-block-utils.js";
+import DemoPlayer from "@/components/DemoPlayer";
 
 const APP_VERSION = "2026.5.29";
 const BUG_REPORT_BASE_URL = "https://github.com/senskorea/frontierlabs-platform/issues/new";
@@ -224,6 +225,7 @@ function GamePageInner() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [socketConnected, setSocketConnected] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [showDemoPlayer, setShowDemoPlayer] = useState(false);
   const [showSharePopup, setShowSharePopup] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -1631,6 +1633,15 @@ function GamePageInner() {
             </button>
           )}
 
+          {/* Demo play button */}
+          <button
+            onClick={() => setShowDemoPlayer(true)}
+            className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-emerald-500/10 border border-emerald-400/20 text-caption text-emerald-300 hover:bg-emerald-500/20 transition-colors"
+          >
+            <span style={{ fontSize: 10 }}>▶</span>
+            <span>Play Demo</span>
+          </button>
+
           {/* Roster buttons */}
           <div className="relative" data-roster-menu-root>
             <div className="flex items-center gap-1.5">
@@ -2476,6 +2487,9 @@ function GamePageInner() {
           onLeave={() => setMode("office")}
         />
       )}
+
+      {/* Demo player overlay */}
+      {showDemoPlayer && <DemoPlayer onClose={() => setShowDemoPlayer(false)} />}
     </div>
   );
 }
