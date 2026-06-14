@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n";
 import { getLocalizedErrorMessage } from "@/lib/i18n/error-codes";
-import LocaleSwitcher from "@/components/LocaleSwitcher";
-import CityScapeBackground from "@/components/CityScapeBackground";
 
 const isComingSoon = process.env.NEXT_PUBLIC_COMING_SOON === "true";
 const isRegistrationDisabled = process.env.NEXT_PUBLIC_REGISTRATION_DISABLED === "true";
@@ -17,6 +15,7 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
   const [checking, setChecking] = useState(true);
   const [hasUsers, setHasUsers] = useState(true);
   const router = useRouter();
@@ -35,36 +34,19 @@ export default function AuthPage() {
         else if (isRegistrationDisabled) setMode("login");
         setChecking(false);
       }
-    }).catch(() => {
-      setChecking(false);
-    });
+    }).catch(() => setChecking(false));
   }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
-
     const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/register";
-    const payload =
-      mode === "login"
-        ? { loginId, password }
-        : { loginId, nickname, password };
-
+    const payload = mode === "login" ? { loginId, password } : { loginId, nickname, password };
     try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
+      const res = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const data = await res.json();
-
-      if (!res.ok) {
-        setError(getLocalizedErrorMessage(t, data));
-        return;
-      }
-
+      if (!res.ok) { setError(getLocalizedErrorMessage(t, data)); return; }
       router.push("/characters");
     } catch {
       setError(t("common.networkError"));
@@ -73,203 +55,192 @@ export default function AuthPage() {
     }
   }
 
+  async function handleDemo() {
+    setError("");
+    setDemoLoading(true);
+    try {
+      const res = await fetch("/api/auth/demo", { method: "POST" });
+      let data: { error?: string; characterId?: string; channelId?: string } = {};
+      try { data = await res.json(); } catch { /* non-JSON */ }
+      if (!res.ok) { setError(data.error || "Demo unavailable — please try again."); return; }
+      if (data.characterId && data.channelId) {
+        router.push(`/game?characterId=${data.characterId}&channelId=${data.channelId}`);
+      } else {
+        router.push("/characters");
+      }
+    } catch {
+      setError("Network error — please try again.");
+    } finally {
+      setDemoLoading(false);
+    }
+  }
+
   if (checking) {
-    return (
-      <div className="theme-web min-h-screen flex items-center justify-center bg-bg text-text">
-        {t("auth.checkingAuth")}
-      </div>
-    );
+    return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#fff", color: "#111" }}>Loading…</div>;
   }
 
   return (
-    <div className="theme-web min-h-screen relative">
-      <CityScapeBackground />
+    <div style={{ minHeight: "100vh", background: "#fff", display: "flex", flexDirection: "column" }}>
 
-      {/* Language switcher */}
-      <div className="fixed top-4 right-4 z-30">
-        <LocaleSwitcher />
-      </div>
+      {/* Top bar */}
+      <header style={{ borderBottom: "1px solid #e5e5e5", padding: "0 40px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {/* Globe mark */}
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+            <circle cx="13" cy="13" r="11.5" stroke="#111" strokeWidth="1.2"/>
+            <ellipse cx="13" cy="13" rx="5.5" ry="11.5" stroke="#111" strokeWidth="1"/>
+            <ellipse cx="13" cy="13" rx="11.5" ry="4" stroke="#111" strokeWidth="1.2"/>
+            <line x1="13" y1="1.5" x2="13" y2="24.5" stroke="#111" strokeWidth="0.8"/>
+            <circle cx="13" cy="13" r="2" fill="#111"/>
+          </svg>
+          <span style={{ fontSize: 16, fontWeight: 600, letterSpacing: "-0.3px", color: "#111", fontFamily: "system-ui, sans-serif" }}>
+            Frontier<span style={{ color: "#00b86b" }}>·labs</span>
+          </span>
+        </div>
+        <span style={{ fontSize: 11, letterSpacing: "3px", color: "#999", textTransform: "uppercase" }}>
+          Grant Intelligence Platform
+        </span>
+      </header>
 
-      {/* Login card - centered */}
-      <div className="fixed inset-0 flex items-start justify-center pt-[15vh] z-20 pointer-events-none">
-        <div className="max-w-[360px] w-[90%] pointer-events-auto">
+      {/* Main layout */}
+      <div style={{ flex: 1, display: "flex" }}>
 
-          {/* FrontierLabs logo */}
-          <div className="text-center mb-4">
-            <div className="flex justify-center mb-2">
-              <svg viewBox="0 0 400 100" width="280" height="70">
-                <defs>
-                  <linearGradient id="gradFL" x1="0%" y1="100%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#00cc7e" />
-                    <stop offset="100%" stopColor="#0088ff" />
-                  </linearGradient>
-                </defs>
-                <circle cx="40" cy="50" r="24" fill="rgba(0,136,255,0.08)" stroke="url(#gradFL)" strokeWidth="2"/>
-                <ellipse cx="40" cy="50" rx="10" ry="24" fill="none" stroke="url(#gradFL)" strokeWidth="1.5"/>
-                <ellipse cx="40" cy="50" rx="24" ry="8" fill="none" stroke="url(#gradFL)" strokeWidth="2.5"/>
-                <line x1="40" y1="26" x2="40" y2="74" stroke="url(#gradFL)" strokeWidth="1.5"/>
-                <circle cx="40" cy="50" r="3" fill="#F5A623"/>
-                <text x="75" y="62" fontFamily="'Outfit', system-ui, sans-serif" fontSize="40" fill="#ffffff" fontWeight="700">Frontier</text>
-                <text x="258" y="62" fontFamily="'JetBrains Mono', monospace" fontSize="36" fill="#00cc7e" fontWeight="700">·labs</text>
-              </svg>
-            </div>
-            <p
-              className="text-[10px] tracking-[6px] mt-1"
-              style={{ color: "#00cc7e", textShadow: "0 0 12px rgba(0,204,126,0.4)" }}
-            >
-              {t("auth.heroTagline")}
-            </p>
-            <p className="mt-3 text-sm text-text-secondary">
-              {t("auth.heroSubtitle")}
-            </p>
-          </div>
-
-          {/* Card */}
-          <div
-            className="rounded-[14px] p-6"
-            style={{
-              background: "rgba(10,15,30,0.92)",
-              backdropFilter: "blur(20px)",
-              border: "1px solid rgba(99,102,241,0.15)",
-              boxShadow: "0 8px 48px rgba(0,0,0,0.7),0 0 0 1px rgba(255,255,255,0.03),inset 0 1px 0 rgba(255,255,255,0.04)",
-            }}
-          >
-            {isComingSoon ? (
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white mb-5">{t("auth.comingSoon")}</div>
-                <a
-                  href="https://github.com/dandacompany/deskrpg"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block w-full py-2.5 rounded-lg text-white font-semibold text-sm text-center"
-                  style={{ background: "linear-gradient(135deg,#4f46e5,#6d28d9)", boxShadow: "0 4px 20px rgba(79,70,229,0.4)" }}
-                >
-                  {t("auth.comingSoonGithub")}
-                </a>
+        {/* Left — hero copy */}
+        <div style={{ flex: 1, padding: "80px 60px", display: "flex", flexDirection: "column", justifyContent: "center", borderRight: "1px solid #e5e5e5" }}>
+          <p style={{ fontSize: 11, letterSpacing: "4px", color: "#00b86b", marginBottom: 24, textTransform: "uppercase" }}>The Citadel</p>
+          <h1 style={{ fontSize: 48, fontWeight: 700, lineHeight: 1.05, color: "#111", margin: "0 0 24px", letterSpacing: "-1.5px", fontFamily: "system-ui, sans-serif" }}>
+            Your AI grant<br />writing team,<br />ready to deploy.
+          </h1>
+          <p style={{ fontSize: 15, color: "#666", lineHeight: 1.7, maxWidth: 360, margin: 0 }}>
+            Five specialised agents work in parallel — scouting opportunities,
+            shaping narratives, drafting proposals, building budgets, and assembling consortia.
+          </p>
+          <div style={{ marginTop: 48, display: "flex", flexDirection: "column", gap: 16 }}>
+            {[
+              { label: "The Scout", desc: "Identifies high-fit funding calls" },
+              { label: "The Strategist", desc: "Shapes your narrative angle" },
+              { label: "The Writer", desc: "Drafts grounded proposal sections" },
+              { label: "The Architect", desc: "Structures budgets and workplans" },
+              { label: "The Team Builder", desc: "Assembles and validates consortia" },
+            ].map((a) => (
+              <div key={a.label} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#00b86b", flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: "#111", fontWeight: 500 }}>{a.label}</span>
+                <span style={{ fontSize: 13, color: "#999" }}>— {a.desc}</span>
               </div>
-            ) : (
+            ))}
+          </div>
+        </div>
+
+        {/* Right — login form */}
+        <div style={{ width: 400, padding: "80px 48px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+
+          {isComingSoon ? (
+            <div>
+              <p style={{ fontSize: 24, fontWeight: 700, color: "#111", marginBottom: 16 }}>{t("auth.comingSoon")}</p>
+            </div>
+          ) : (
             <>
+              <p style={{ fontSize: 22, fontWeight: 700, color: "#111", margin: "0 0 32px", letterSpacing: "-0.5px" }}>
+                {!hasUsers ? "Create your account" : mode === "login" ? "Sign in" : "Create account"}
+              </p>
+
+              {/* Demo button — primary CTA */}
+              <button
+                onClick={handleDemo}
+                disabled={demoLoading || loading}
+                style={{
+                  width: "100%", padding: "13px 0", background: "#111", color: "#fff",
+                  border: "none", borderRadius: 6, fontSize: 14, fontWeight: 600,
+                  cursor: demoLoading ? "wait" : "pointer", marginBottom: 24,
+                  letterSpacing: "0.1px", transition: "background 0.15s",
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = "#333")}
+                onMouseLeave={e => (e.currentTarget.style.background = "#111")}
+              >
+                {demoLoading ? "Loading…" : "✦ Try the demo"}
+              </button>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+                <div style={{ flex: 1, height: 1, background: "#e5e5e5" }} />
+                <span style={{ fontSize: 12, color: "#aaa" }}>or sign in</span>
+                <div style={{ flex: 1, height: 1, background: "#e5e5e5" }} />
+              </div>
+
               {/* Tab switcher */}
               {hasUsers && !isRegistrationDisabled && (
-                <div className="flex mb-5 rounded-lg overflow-hidden border border-border">
-                  <button
-                    onClick={() => setMode("login")}
-                    className={`flex-1 py-2.5 text-center text-sm font-semibold transition-colors ${
-                      mode === "login"
-                        ? "bg-primary text-white"
-                        : "bg-[#0a0f1e] text-text-dim hover:text-text-secondary"
-                    }`}
-                  >
-                    {t("auth.login")}
-                  </button>
-                  <button
-                    onClick={() => setMode("register")}
-                    className={`flex-1 py-2.5 text-center text-sm font-semibold transition-colors ${
-                      mode === "register"
-                        ? "bg-primary text-white"
-                        : "bg-[#0a0f1e] text-text-dim hover:text-text-secondary"
-                    }`}
-                  >
-                    {t("auth.register")}
-                  </button>
+                <div style={{ display: "flex", gap: 0, marginBottom: 24, border: "1px solid #e5e5e5", borderRadius: 6, overflow: "hidden" }}>
+                  {(["login", "register"] as const).map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => { setMode(m); setError(""); }}
+                      style={{
+                        flex: 1, padding: "9px 0", fontSize: 13, fontWeight: 500,
+                        background: mode === m ? "#111" : "#fff",
+                        color: mode === m ? "#fff" : "#666",
+                        border: "none", cursor: "pointer", transition: "all 0.15s",
+                      }}
+                    >
+                      {m === "login" ? "Sign in" : "Register"}
+                    </button>
+                  ))}
                 </div>
               )}
 
               {!hasUsers && (
-                <p className="text-center text-sm text-text-secondary mb-5">
-                  {t("auth.setupDescription")}
-                </p>
+                <p style={{ fontSize: 13, color: "#666", marginBottom: 20 }}>{t("auth.setupDescription")}</p>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-3">
+              <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 <input
                   type="text"
-                  placeholder={t("auth.loginIdPlaceholder")}
+                  placeholder="Login ID"
                   value={loginId}
-                  onChange={(e) => setLoginId(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[#0a0f1e] text-white rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary-light text-sm placeholder-text-dim"
-                  minLength={2}
-                  maxLength={50}
-                  required
+                  onChange={e => setLoginId(e.target.value)}
+                  style={{ width: "100%", padding: "11px 14px", border: "1px solid #e5e5e5", borderRadius: 6, fontSize: 14, color: "#111", outline: "none", boxSizing: "border-box" }}
+                  minLength={2} maxLength={50} required
                 />
                 {mode === "register" && (
                   <input
                     type="text"
-                    placeholder={t("auth.displayNamePlaceholder")}
+                    placeholder="Display name"
                     value={nickname}
-                    onChange={(e) => setNickname(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-[#0a0f1e] text-white rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary-light text-sm placeholder-text-dim"
-                    minLength={2}
-                    maxLength={50}
-                    required
+                    onChange={e => setNickname(e.target.value)}
+                    style={{ width: "100%", padding: "11px 14px", border: "1px solid #e5e5e5", borderRadius: 6, fontSize: 14, color: "#111", outline: "none", boxSizing: "border-box" }}
+                    minLength={2} maxLength={50} required
                   />
                 )}
                 <input
                   type="password"
-                  placeholder={t("auth.passwordPlaceholder")}
+                  placeholder="Password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[#0a0f1e] text-white rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary-light text-sm placeholder-text-dim"
-                  minLength={4}
-                  required
+                  onChange={e => setPassword(e.target.value)}
+                  style={{ width: "100%", padding: "11px 14px", border: "1px solid #e5e5e5", borderRadius: 6, fontSize: 14, color: "#111", outline: "none", boxSizing: "border-box" }}
+                  minLength={4} required
                 />
-                {error && <p className="text-danger text-sm">{error}</p>}
+                {error && <p style={{ fontSize: 13, color: "#d00", margin: 0 }}>{error}</p>}
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="w-full py-2.5 rounded-lg text-white font-semibold text-sm disabled:opacity-50 mt-2"
-                  style={{ background: "linear-gradient(135deg,#4f46e5,#6d28d9)", boxShadow: "0 4px 20px rgba(79,70,229,0.4)" }}
+                  disabled={loading || demoLoading}
+                  style={{
+                    width: "100%", padding: "11px 0", background: "#fff", color: "#111",
+                    border: "1px solid #111", borderRadius: 6, fontSize: 14, fontWeight: 600,
+                    cursor: loading ? "wait" : "pointer", marginTop: 4,
+                  }}
                 >
-                  {loading
-                    ? mode === "login" ? t("auth.loggingIn") : t("auth.registering")
-                    : !hasUsers ? t("auth.getStarted")
-                    : mode === "login" ? t("auth.login")
-                    : t("auth.register")}
+                  {loading ? "Loading…" : mode === "login" ? "Sign in" : "Create account"}
                 </button>
               </form>
             </>
-            )}
-
-            {/* Demo button */}
-            <div className="mt-4 text-center">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="flex-1 h-px bg-white/10" />
-                <span className="text-xs text-text-dim">or</span>
-                <div className="flex-1 h-px bg-white/10" />
-              </div>
-              <button
-                onClick={async () => {
-                  setError("");
-                  setLoading(true);
-                  try {
-                    const res = await fetch("/api/auth/demo", { method: "POST" });
-                    let data: { error?: string; characterId?: string; channelId?: string } = {};
-                    try { data = await res.json(); } catch { /* non-JSON response */ }
-                    if (!res.ok) {
-                      setError(data.error || "Demo unavailable — please try again.");
-                      return;
-                    }
-                    if (data.characterId && data.channelId) {
-                      router.push(`/game?characterId=${data.characterId}&channelId=${data.channelId}`);
-                    } else {
-                      router.push("/characters");
-                    }
-                  } catch {
-                    setError("Network error — please try again.");
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-                disabled={loading}
-                className="w-full py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50 transition-colors"
-                style={{ background: "transparent", border: "1px solid rgba(0,204,126,0.4)", color: "#00cc7e" }}
-              >
-                ✦ Try the Demo
-              </button>
-            </div>
-          </div>
+          )}
         </div>
       </div>
+
+      {/* Footer */}
+      <footer style={{ borderTop: "1px solid #e5e5e5", padding: "16px 40px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: 12, color: "#bbb" }}>© 2025 FrontierLabs</span>
+        <span style={{ fontSize: 12, color: "#bbb" }}>AI-powered grant intelligence</span>
+      </footer>
     </div>
   );
 }

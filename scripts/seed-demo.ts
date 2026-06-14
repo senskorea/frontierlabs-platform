@@ -37,7 +37,17 @@ console.log("✓ Created user: mark / demo1234");
 // ── 2. Character for mark ────────────────────────────────────────────────────
 
 const characterId = randomUUID();
-const defaultAppearance = JSON.stringify({ body: "light", hair: "short_brown", outfit: "suit" });
+const defaultAppearance = JSON.stringify({
+  bodyType: "male",
+  layers: {
+    body: { itemKey: "body", variant: "light" },
+    eye_color: { itemKey: "eye_color", variant: "brown" },
+    hair: { itemKey: "hair_bangs", variant: "brown" },
+    torso: { itemKey: "torso_clothes_tshirt", variant: "teal" },
+    legs: { itemKey: "legs_pants", variant: "dark_grey" },
+    feet: { itemKey: "feet_shoes_basic", variant: "black" },
+  }
+});
 
 db.prepare(`
   INSERT INTO characters (id, user_id, name, appearance, created_at, updated_at)
@@ -50,14 +60,34 @@ console.log("✓ Created character: Mark");
 
 const channelId = randomUUID();
 
+const MAP_W = 30, MAP_H = 20, TILE = 32;
+const empty = new Array(MAP_W * MAP_H).fill(0);
+const defaultMapData = JSON.stringify({
+  compressionlevel: -1, width: MAP_W, height: MAP_H,
+  tilewidth: TILE, tileheight: TILE,
+  orientation: "orthogonal", renderorder: "right-down",
+  infinite: false, type: "map", version: "1.10", tiledversion: "1.11.2",
+  nextlayerid: 7, nextobjectid: 2, tilesets: [],
+  layers: [
+    { id: 1, name: "Floor",      type: "tilelayer",  width: MAP_W, height: MAP_H, x: 0, y: 0, opacity: 1,   visible: true, data: [...empty], properties: [{ name: "depth", type: "int",    value: 0 }] },
+    { id: 2, name: "Walls",      type: "tilelayer",  width: MAP_W, height: MAP_H, x: 0, y: 0, opacity: 1,   visible: true, data: [...empty], properties: [{ name: "depth", type: "int",    value: 1 }] },
+    { id: 3, name: "Foreground", type: "tilelayer",  width: MAP_W, height: MAP_H, x: 0, y: 0, opacity: 1,   visible: true, data: [...empty], properties: [{ name: "depth", type: "int",    value: 10000 }] },
+    { id: 4, name: "Collision",  type: "tilelayer",  width: MAP_W, height: MAP_H, x: 0, y: 0, opacity: 0.7, visible: true, data: [...empty], properties: [{ name: "depth", type: "int",    value: -1 }] },
+    { id: 5, name: "Objects",    type: "objectgroup", x: 0, y: 0, opacity: 1, visible: true, draworder: "topdown",
+      objects: [{ id: 1, name: "spawn", type: "spawn", x: Math.floor(MAP_W / 2) * TILE, y: Math.floor(MAP_H / 2) * TILE, width: TILE, height: TILE, visible: true }],
+      properties: [{ name: "depth", type: "string", value: "y-sort" }] },
+  ],
+});
+
 db.prepare(`
-  INSERT INTO channels (id, name, description, owner_id, is_public, max_players, created_at, updated_at)
-  VALUES (?, ?, ?, ?, 1, 50, ?, ?)
+  INSERT INTO channels (id, name, description, owner_id, is_public, max_players, map_data, created_at, updated_at)
+  VALUES (?, ?, ?, ?, 1, 50, ?, ?, ?)
 `).run(
   channelId,
   "EIC Accelerator 2025",
   "Active proposal pipeline for Horizon Europe EIC Accelerator — September 2025 deadline",
   userId,
+  defaultMapData,
   now,
   now
 );

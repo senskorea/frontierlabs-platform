@@ -45,6 +45,24 @@ async function ensureDemoData() {
   // Channel
   let [channel] = await db.select().from(channels).where(eq(channels.name, DEMO_CHANNEL)).limit(1);
   if (!channel) {
+    const MAP_W = 30, MAP_H = 20, TILE = 32;
+    const empty = new Array(MAP_W * MAP_H).fill(0);
+    const defaultMapData = {
+      compressionlevel: -1, width: MAP_W, height: MAP_H,
+      tilewidth: TILE, tileheight: TILE,
+      orientation: "orthogonal", renderorder: "right-down",
+      infinite: false, type: "map", version: "1.10", tiledversion: "1.11.2",
+      nextlayerid: 7, nextobjectid: 2, tilesets: [],
+      layers: [
+        { id: 1, name: "Floor",      type: "tilelayer",   width: MAP_W, height: MAP_H, x: 0, y: 0, opacity: 1,   visible: true, data: [...empty], properties: [{ name: "depth", type: "int",    value: 0 }] },
+        { id: 2, name: "Walls",      type: "tilelayer",   width: MAP_W, height: MAP_H, x: 0, y: 0, opacity: 1,   visible: true, data: [...empty], properties: [{ name: "depth", type: "int",    value: 1 }] },
+        { id: 3, name: "Foreground", type: "tilelayer",   width: MAP_W, height: MAP_H, x: 0, y: 0, opacity: 1,   visible: true, data: [...empty], properties: [{ name: "depth", type: "int",    value: 10000 }] },
+        { id: 4, name: "Collision",  type: "tilelayer",   width: MAP_W, height: MAP_H, x: 0, y: 0, opacity: 0.7, visible: true, data: [...empty], properties: [{ name: "depth", type: "int",    value: -1 }] },
+        { id: 5, name: "Objects",    type: "objectgroup", x: 0, y: 0, opacity: 1, visible: true, draworder: "topdown",
+          objects: [{ id: 1, name: "spawn", type: "spawn", x: Math.floor(MAP_W / 2) * TILE, y: Math.floor(MAP_H / 2) * TILE, width: TILE, height: TILE, visible: true }],
+          properties: [{ name: "depth", type: "string", value: "y-sort" }] },
+      ],
+    };
     const [created] = await db
       .insert(channels)
       .values({
@@ -54,6 +72,7 @@ async function ensureDemoData() {
         ownerId: user.id,
         isPublic: true,
         maxPlayers: 50,
+        mapData: jsonForDb(defaultMapData),
       })
       .returning();
     channel = created;
