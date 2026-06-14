@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 
 const DEMO_LOGIN_ID = "mark";
-const DEMO_CHANNEL = "EIC Accelerator 2025";
+const DEMO_CHANNEL = "NeuroSync Korea — Series A 2026";
 
 async function ensureDemoData() {
   // User
