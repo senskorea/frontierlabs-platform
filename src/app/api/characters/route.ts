@@ -4,15 +4,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { validateAppearance } from "@/lib/lpc-registry";
 import { parseDbJson } from "@/lib/db-json";
+import { getAuthUserId } from "@/lib/auth-request";
 
-function getUserId(req: NextRequest): string | null {
-  return req.headers.get("x-user-id");
+async function getUserId(req: NextRequest): Promise<string | null> {
+  return getAuthUserId(req);
 }
 
 const MAX_CHARACTERS = 5;
 
 export async function GET(req: NextRequest) {
-  const userId = getUserId(req);
+  const userId = await getUserId(req);
   if (!userId) {
     return NextResponse.json({ errorCode: "unauthorized", error: "unauthorized" }, { status: 401 });
   }
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const userId = getUserId(req);
+  const userId = await getUserId(req);
   if (!userId) {
     return NextResponse.json({ errorCode: "unauthorized", error: "unauthorized" }, { status: 401 });
   }

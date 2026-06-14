@@ -5,8 +5,9 @@ import { eq, and } from "drizzle-orm";
 import { validateAppearance } from "@/lib/lpc-registry";
 import { parseDbJson } from "@/lib/db-json";
 
-function getUserId(req: NextRequest): string | null {
-  return req.headers.get("x-user-id");
+async function getUserId(req: NextRequest): Promise<string | null> {
+  const { getAuthUserId } = await import("@/lib/auth-request");
+  return getAuthUserId(req);
 }
 
 // GET /api/characters/:id — get single character
@@ -14,7 +15,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const userId = getUserId(req);
+  const userId = await getUserId(req);
   if (!userId) {
     return NextResponse.json({ errorCode: "unauthorized", error: "unauthorized" }, { status: 401 });
   }
@@ -53,7 +54,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const userId = getUserId(req);
+  const userId = await getUserId(req);
   if (!userId) {
     return NextResponse.json({ errorCode: "unauthorized", error: "unauthorized" }, { status: 401 });
   }
@@ -126,7 +127,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const userId = getUserId(req);
+  const userId = await getUserId(req);
   if (!userId) {
     return NextResponse.json({ errorCode: "unauthorized", error: "unauthorized" }, { status: 401 });
   }
