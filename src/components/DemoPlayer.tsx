@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { EventBus } from "@/game/EventBus";
 
 // ── TIPS Program content ──────────────────────────────────────────────────────
 
@@ -11,7 +12,6 @@ interface AgentStep {
   zone: string;
   message: string;
   stat: string;
-  // Office view position (% of mini-map)
   x: number;
   y: number;
 }
@@ -49,7 +49,7 @@ const AGENTS: AgentStep[] = [
   },
 ];
 
-const STEP_DURATION = 5000;
+const STEP_DURATION = 5200;
 const TYPE_SPEED = 14;
 
 // ── Typewriter hook ───────────────────────────────────────────────────────────
@@ -99,88 +99,6 @@ function BriefingCard({ agent, active, done }: { agent: AgentStep; active: boole
   );
 }
 
-// ── Office view mode — mini-map with speech bubbles ───────────────────────────
-
-function OfficeBubble({ agent, active, done }: { agent: AgentStep; active: boolean; done: boolean }) {
-  const text = useTypewriter(agent.message.slice(0, 120) + "…", active);
-  return (
-    <div style={{ position: "absolute", left: `${agent.x}%`, top: `${agent.y}%`, transform: "translate(-50%, -50%)", zIndex: 2 }}>
-      {/* Speech bubble */}
-      {(active || done) && (
-        <div style={{
-          position: "absolute", bottom: "calc(100% + 10px)", left: "50%", transform: "translateX(-50%)",
-          width: 160, background: "rgba(10,12,20,0.96)", border: `1px solid ${agent.color}66`,
-          borderRadius: 8, padding: "8px 10px", animation: "fadeUp 0.3s ease",
-          boxShadow: `0 4px 20px rgba(0,0,0,0.6), 0 0 0 1px ${agent.color}22`,
-          pointerEvents: "none",
-        }}>
-          <div style={{ fontSize: 9, color: agent.color, fontWeight: 700, marginBottom: 4, letterSpacing: "0.5px" }}>
-            {agent.name.toUpperCase()}
-          </div>
-          <p style={{ margin: 0, fontSize: 10, color: "rgba(255,255,255,0.8)", lineHeight: 1.55 }}>
-            {active ? text : agent.message.slice(0, 120) + "…"}
-            {active && <span style={{ animation: "blink 0.6s infinite", color: agent.color }}>▌</span>}
-          </p>
-          {/* Bubble tail */}
-          <div style={{ position: "absolute", bottom: -6, left: "50%", transform: "translateX(-50%)",
-            width: 0, height: 0, borderLeft: "6px solid transparent", borderRight: "6px solid transparent",
-            borderTop: `6px solid ${agent.color}66` }} />
-        </div>
-      )}
-      {/* Agent avatar */}
-      <div style={{
-        width: 32, height: 32, borderRadius: "50%", background: agent.color,
-        border: `2px solid ${active ? "#fff" : done ? agent.color : "rgba(255,255,255,0.2)"}`,
-        boxShadow: active ? `0 0 16px ${agent.color}` : done ? `0 0 6px ${agent.color}66` : "none",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 11, fontWeight: 700, color: "#fff",
-        transition: "all 0.4s", animation: active ? "pulse 1s infinite" : "none",
-        cursor: "default",
-      }}>
-        {agent.name.split(" ")[1][0]}
-      </div>
-      {/* Zone label */}
-      <div style={{ textAlign: "center", fontSize: 9, color: "rgba(255,255,255,0.4)", marginTop: 4, whiteSpace: "nowrap" }}>
-        {agent.zone}
-      </div>
-    </div>
-  );
-}
-
-function OfficeView({ activeIdx, doneSet }: { activeIdx: number; doneSet: Set<number> }) {
-  return (
-    <div style={{ position: "relative", width: "100%", height: 320, background: "rgba(8,12,24,0.6)",
-      border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, overflow: "hidden", margin: "0 0 12px" }}>
-      {/* Zone backgrounds */}
-      {[
-        { label: "Scout Desk",    x: 0,    y: 0,    w: "36%", h: "50%", color: "#3B82F6" },
-        { label: "Strategy Room", x: "36%", y: 0,    w: "36%", h: "50%", color: "#10B981" },
-        { label: "Writing Bay",   x: 0,    y: "50%", w: "36%", h: "50%", color: "#F59E0B" },
-        { label: "Budget Corner", x: "36%", y: "50%", w: "36%", h: "50%", color: "#8B5CF6" },
-        { label: "Team Builder",  x: "72%", y: 0,    w: "28%", h: "100%", color: "#EF4444" },
-      ].map(z => (
-        <div key={z.label} style={{
-          position: "absolute", left: z.x, top: z.y, width: z.w, height: z.h,
-          background: `${z.color}08`, borderRight: "1px solid rgba(255,255,255,0.04)",
-          borderBottom: "1px solid rgba(255,255,255,0.04)",
-        }}>
-          <span style={{ position: "absolute", bottom: 6, right: 8, fontSize: 9,
-            color: `${z.color}55`, letterSpacing: "0.5px", textTransform: "uppercase" }}>
-            {z.label}
-          </span>
-        </div>
-      ))}
-      {/* Corridor */}
-      <div style={{ position: "absolute", left: 0, top: "48%", width: "72%", height: "4%",
-        background: "rgba(255,255,255,0.03)" }} />
-      {/* Agents */}
-      {AGENTS.map((a, i) => (
-        <OfficeBubble key={a.id} agent={a} active={activeIdx === i} done={doneSet.has(i)} />
-      ))}
-    </div>
-  );
-}
-
 // ── Human-in-the-loop input ───────────────────────────────────────────────────
 
 function HumanInput() {
@@ -193,7 +111,7 @@ function HumanInput() {
         Your input — Human in the loop
       </div>
       {sent ? (
-        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", padding: "8px 0", animation: "fadeUp 0.3s ease" }}>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", padding: "8px 0" }}>
           <span style={{ color: "#00cc7e" }}>✓</span> Message received. Agents will incorporate your feedback into the next draft.
         </div>
       ) : (
@@ -223,12 +141,12 @@ function HumanInput() {
   );
 }
 
-// ── Final stats reveal ────────────────────────────────────────────────────────
+// ── Final stats reveal (briefing mode) ───────────────────────────────────────
 
 function FinalReveal() {
   return (
     <div style={{ borderRadius: 8, background: "rgba(0,204,126,0.06)",
-      border: "1px solid rgba(0,204,126,0.2)", padding: "16px 18px", animation: "fadeUp 0.5s ease" }}>
+      border: "1px solid rgba(0,204,126,0.2)", padding: "16px 18px" }}>
       <div style={{ fontSize: 10, letterSpacing: "3px", color: "#00cc7e", marginBottom: 12, textTransform: "uppercase" }}>
         Application Ready — TIPS 2026 Spring Cohort
       </div>
@@ -252,6 +170,129 @@ function FinalReveal() {
   );
 }
 
+// ── Office mode HUD (transparent, overlaid on Phaser game) ───────────────────
+
+function OfficeHUD({
+  activeIdx, doneSet, phase, mode, setMode, onClose,
+}: {
+  activeIdx: number;
+  doneSet: Set<number>;
+  phase: "init" | "agents" | "done";
+  mode: "briefing" | "office";
+  setMode: (m: "briefing" | "office") => void;
+  onClose: () => void;
+}) {
+  const agent = activeIdx >= 0 ? AGENTS[activeIdx] : null;
+
+  return (
+    <>
+      <style>{`
+        @keyframes pulse  { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        @keyframes fadeUp { from{opacity:0;transform:translateX(-50%) translateY(8px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+        @keyframes fadeUpCenter { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+      `}</style>
+
+      {/* Top gradient + HUD */}
+      <div style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999,
+        background: "linear-gradient(to bottom, rgba(0,0,0,0.72) 0%, transparent 100%)",
+        padding: "10px 16px 28px",
+        display: "flex", alignItems: "center", gap: 14,
+        pointerEvents: "none",
+      }}>
+        {/* Live indicator */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, pointerEvents: "none" }}>
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#00cc7e",
+            animation: phase === "agents" ? "pulse 1.5s infinite" : "none" }} />
+          <span style={{ fontSize: 10, letterSpacing: "2px", color: "#00cc7e", textTransform: "uppercase" }}>
+            {phase === "init" ? "Initialising…" : phase === "done" ? "Complete" : "Office View · Live"}
+          </span>
+        </div>
+
+        {/* Mode switcher */}
+        <div style={{ display: "flex", pointerEvents: "all",
+          border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, overflow: "hidden" }}>
+          {([["briefing", "📋 Briefing"], ["office", "🏢 Office View"]] as ["briefing"|"office", string][]).map(([m, label]) => (
+            <button key={m} onClick={() => setMode(m)} style={{
+              padding: "5px 12px", fontSize: 10, fontWeight: 500, border: "none", cursor: "pointer",
+              background: mode === m ? "rgba(0,204,126,0.25)" : "rgba(0,0,0,0.5)",
+              color: mode === m ? "#00cc7e" : "rgba(255,255,255,0.45)",
+              borderRight: m === "briefing" ? "1px solid rgba(255,255,255,0.08)" : "none",
+            }}>{label}</button>
+          ))}
+        </div>
+
+        {/* Agent progress pills */}
+        <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+          {AGENTS.map((a, i) => (
+            <div key={a.id} title={a.name} style={{
+              width: activeIdx === i ? 22 : 8, height: 8, borderRadius: 4,
+              background: doneSet.has(i) ? a.color : activeIdx === i ? a.color : "rgba(255,255,255,0.18)",
+              transition: "all 0.3s",
+              boxShadow: activeIdx === i ? `0 0 8px ${a.color}` : "none",
+            }} />
+          ))}
+        </div>
+
+        {agent && (
+          <span style={{ fontSize: 11, color: agent.color, fontWeight: 600 }}>
+            {agent.name} · {agent.role}
+          </span>
+        )}
+        {phase === "done" && (
+          <span style={{ fontSize: 11, color: "#00cc7e", fontWeight: 600 }}>✓ All agents complete</span>
+        )}
+
+        <div style={{ flex: 1 }} />
+
+        <button
+          onClick={onClose}
+          style={{
+            pointerEvents: "all", background: "rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.14)", borderRadius: 6,
+            padding: "4px 12px", color: "rgba(255,255,255,0.55)", fontSize: 10, cursor: "pointer",
+          }}
+        >
+          ✕ Exit demo
+        </button>
+      </div>
+
+      {/* Current agent message strip at bottom */}
+      {agent && phase === "agents" && (
+        <div style={{
+          position: "fixed", bottom: 24, left: "50%", zIndex: 9999,
+          transform: "translateX(-50%)", width: 440,
+          background: "rgba(6,9,20,0.88)", border: `1px solid ${agent.color}44`,
+          borderRadius: 10, padding: "10px 14px",
+          backdropFilter: "blur(10px)", animation: "fadeUp 0.35s ease",
+          pointerEvents: "none",
+        }}>
+          <div style={{ fontSize: 9, color: agent.color, fontWeight: 700, marginBottom: 4, letterSpacing: "1px", textTransform: "uppercase" }}>
+            {agent.name} · {agent.zone}
+          </div>
+          <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.72)", lineHeight: 1.55 }}>
+            {agent.message.slice(0, 130)}…
+          </p>
+        </div>
+      )}
+
+      {/* Done — human-in-the-loop */}
+      {phase === "done" && (
+        <div style={{
+          position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
+          zIndex: 9999, width: 480,
+          background: "rgba(6,9,20,0.95)", border: "1px solid rgba(0,204,126,0.2)",
+          borderRadius: 12, padding: "16px 18px",
+          backdropFilter: "blur(14px)", animation: "fadeUpCenter 0.4s ease",
+          pointerEvents: "all",
+        }}>
+          <HumanInput />
+        </div>
+      )}
+    </>
+  );
+}
+
 // ── Main DemoPlayer ───────────────────────────────────────────────────────────
 
 type Mode = "briefing" | "office";
@@ -262,13 +303,16 @@ export default function DemoPlayer({ onClose }: { onClose: () => void }) {
   const [activeIdx, setActiveIdx] = useState(-1);
   const [doneSet, setDoneSet] = useState<Set<number>>(new Set());
 
-  // Reset when mode changes
+  // Reset + start sequence on mode change
   useEffect(() => {
-    setPhase("init"); setActiveIdx(-1); setDoneSet(new Set());
-    const t = setTimeout(() => setPhase("agents"), 1000);
+    setPhase("init");
+    setActiveIdx(-1);
+    setDoneSet(new Set());
+    const t = setTimeout(() => setPhase("agents"), 800);
     return () => clearTimeout(t);
   }, [mode]);
 
+  // Drive the agent sequence
   useEffect(() => {
     if (phase !== "agents") return;
     let idx = 0;
@@ -276,15 +320,45 @@ export default function DemoPlayer({ onClose }: { onClose: () => void }) {
       if (idx >= AGENTS.length) { setPhase("done"); setActiveIdx(-1); return; }
       setActiveIdx(idx);
       const i = idx;
+
+      if (mode === "office") {
+        EventBus.emit("demo:npc-speak", {
+          npcName: AGENTS[i].name,
+          message: AGENTS[i].message,
+          durationMs: STEP_DURATION,
+        });
+      }
+
       setTimeout(() => {
         setDoneSet(prev => new Set([...prev, i]));
-        idx++; setTimeout(next, 300);
+        idx++;
+        setTimeout(next, 300);
       }, STEP_DURATION);
     };
     const t = setTimeout(next, 200);
     return () => clearTimeout(t);
-  }, [phase]);
+  }, [phase, mode]);
 
+  const handleClose = () => {
+    if (mode === "office") EventBus.emit("demo:office-end", {});
+    onClose();
+  };
+
+  // ── Office mode: transparent HUD only (game stays fully visible) ──────────
+  if (mode === "office") {
+    return (
+      <OfficeHUD
+        activeIdx={activeIdx}
+        doneSet={doneSet}
+        phase={phase}
+        mode={mode}
+        setMode={setMode}
+        onClose={handleClose}
+      />
+    );
+  }
+
+  // ── Briefing mode: dark cinematic overlay ─────────────────────────────────
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 9999,
       background: "rgba(0,0,0,0.85)", backdropFilter: "blur(14px)",
@@ -297,7 +371,7 @@ export default function DemoPlayer({ onClose }: { onClose: () => void }) {
 
       <div style={{ width: "100%", maxWidth: 700, maxHeight: "90vh", overflow: "auto",
         background: "rgba(6,9,20,0.98)", border: "1px solid rgba(255,255,255,0.07)",
-        borderRadius: 14, boxShadow: "0 40px 120px rgba(0,0,0,0.8)", animation: "fadeUp 0.3s ease" }}>
+        borderRadius: 14, boxShadow: "0 40px 120px rgba(0,0,0,0.8)" }}>
 
         {/* Header */}
         <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)",
@@ -313,17 +387,17 @@ export default function DemoPlayer({ onClose }: { onClose: () => void }) {
               NeuroSync Korea — TIPS 2026 Spring Cohort
             </p>
             <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.35)" }}>
-              Ministry of SMEs & Startups · ₩1B R&D grant · Deadline 15 April 2026
+              Ministry of SMEs &amp; Startups · ₩1B R&amp;D grant · Deadline 15 April 2026
             </p>
           </div>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
+          <button onClick={handleClose} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
             borderRadius: 7, padding: "6px 13px", color: "rgba(255,255,255,0.45)", fontSize: 12, cursor: "pointer" }}>
             ✕ Close
           </button>
         </div>
 
         {/* Mode switcher */}
-        <div style={{ display: "flex", gap: 0, margin: "16px 20px 12px",
+        <div style={{ display: "flex", margin: "16px 20px 12px",
           border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, overflow: "hidden", width: "fit-content" }}>
           {([["briefing", "📋 Briefing"], ["office", "🏢 Office View"]] as [Mode, string][]).map(([m, label]) => (
             <button key={m} onClick={() => setMode(m)} style={{
@@ -339,24 +413,22 @@ export default function DemoPlayer({ onClose }: { onClose: () => void }) {
         {/* Body */}
         <div style={{ padding: "0 20px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
           {phase === "init" && (
-            <div style={{ textAlign: "center", padding: "36px 0", animation: "fadeUp 0.3s ease" }}>
+            <div style={{ textAlign: "center", padding: "36px 0" }}>
               <div style={{ fontSize: 11, letterSpacing: "2px", color: "#00cc7e", marginBottom: 14 }}>
                 INITIALISING AGENT NETWORK
               </div>
               <div style={{ display: "flex", justifyContent: "center", gap: 5 }}>
-                {[0,1,2].map(i => <div key={i} style={{ width: 5, height: 5, borderRadius: "50%", background: "#00cc7e", animation: `pulse 1s ${i*0.2}s infinite` }} />)}
+                {[0,1,2].map(i => (
+                  <div key={i} style={{ width: 5, height: 5, borderRadius: "50%", background: "#00cc7e",
+                    animation: `pulse 1s ${i*0.2}s infinite` }} />
+                ))}
               </div>
             </div>
           )}
 
-          {(phase === "agents" || phase === "done") && (
-            <>
-              {mode === "office" && <OfficeView activeIdx={activeIdx} doneSet={doneSet} />}
-              {mode === "briefing" && AGENTS.map((a, i) => (
-                <BriefingCard key={a.id} agent={a} active={activeIdx === i} done={doneSet.has(i)} />
-              ))}
-            </>
-          )}
+          {(phase === "agents" || phase === "done") && AGENTS.map((a, i) => (
+            <BriefingCard key={a.id} agent={a} active={activeIdx === i} done={doneSet.has(i)} />
+          ))}
 
           {phase === "done" && <FinalReveal />}
         </div>

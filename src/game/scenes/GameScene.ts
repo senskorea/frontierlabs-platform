@@ -1644,6 +1644,23 @@ export class GameScene extends Phaser.Scene {
       this.clearNpcBubble(data.npcId);
     });
 
+    // Demo Office View mode
+    EventBus.on("demo:npc-speak", (data: { npcName: string; message: string; durationMs: number }) => {
+      const npc = this.npcSprites.find(n => n.name === data.npcName);
+      if (npc) {
+        this.cameras.main.stopFollow();
+        this.cameras.main.pan(npc.pixelX, npc.pixelY, 700, "Power2");
+      }
+      this.showDemoSpeechBubble(data.npcName, data.message, data.durationMs);
+    });
+    EventBus.on("demo:office-end", () => {
+      if (this.player && this.playerReady) {
+        this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+      }
+      for (const [, c] of this.demoBubbles) c.destroy();
+      this.demoBubbles.clear();
+    });
+
     // Respond to position requests from React (for save-on-leave)
     EventBus.on("request-player-position", () => {
       if (this.player) {
@@ -1669,6 +1686,7 @@ export class GameScene extends Phaser.Scene {
         "npc:deliver-response", "npc:start-return", "npc:approach-and-interact",
         "spritesheet-ready", "socket-ready",
         "chat:bubble", "npc:bubble", "npc:bubble-clear",
+        "demo:npc-speak", "demo:office-end",
         "request-player-position",
       ];
       for (const ev of gameSceneEvents) {
@@ -2844,6 +2862,7 @@ export class GameScene extends Phaser.Scene {
   // ---------------------------------------------------------------------------
 
   private npcBubbles: Map<string, Phaser.GameObjects.Container> = new Map();
+  private demoBubbles: Map<string, Phaser.GameObjects.Container> = new Map();
 
   private createBubbleIcon(x: number, y: number, text?: string): Phaser.GameObjects.Container {
     const container = this.add.container(x, y - 44);
@@ -2925,6 +2944,56 @@ export class GameScene extends Phaser.Scene {
       bubble.destroy();
       this.npcBubbles.delete(npcId);
     }
+  }
+
+  private showDemoSpeechBubble(npcName: string, message: string, durationMs: number): void {
+    const npc = this.npcSprites.find(n => n.name === npcName);
+    if (!npc) return;
+
+    const existing = this.demoBubbles.get(npcName);
+    if (existing) { existing.destroy(); this.demoBubbles.delete(npcName); }
+
+    const pad = 10;
+    const maxW = 240;
+
+    const label = this.add.text(0, 0, message, {
+      fontSize: "11px",
+      color: "#ffffff",
+      wordWrap: { width: maxW - pad * 2 },
+      lineSpacing: 3,
+    });
+    label.setOrigin(0.5, 1);
+
+    const bw = Math.max(120, label.width + pad * 2);
+    const bh = label.height + pad * 2;
+
+    const gfx = this.add.graphics();
+    gfx.fillStyle(0x0a0f1e, 0.94);
+    gfx.fillRoundedRect(-bw / 2, -bh - 8, bw, bh, 8);
+    gfx.lineStyle(1.5, 0x00cc7e, 0.8);
+    gfx.strokeRoundedRect(-bw / 2, -bh - 8, bw, bh, 8);
+    gfx.fillStyle(0x0a0f1e, 0.94);
+    gfx.fillTriangle(-5, -9, 5, -9, 0, 0);
+
+    const container = this.add.container(npc.pixelX, npc.pixelY - 56);
+    container.add(gfx);
+    container.add(label);
+    container.setDepth(20010);
+    this.demoBubbles.set(npcName, container);
+
+    this.time.delayedCall(durationMs - 500, () => {
+      if (this.demoBubbles.get(npcName) === container) {
+        this.tweens.add({
+          targets: container,
+          alpha: 0,
+          duration: 400,
+          onComplete: () => {
+            container.destroy();
+            this.demoBubbles.delete(npcName);
+          },
+        });
+      }
+    });
   }
 
   // ---------------------------------------------------------------------------
