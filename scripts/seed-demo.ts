@@ -129,10 +129,10 @@ async function main() {
   const mapConfig = JSON.stringify({ spawnCol: 10, spawnRow: 9 });
 
   db.prepare(`INSERT INTO channels (id, name, description, owner_id, is_public, max_players, map_data, map_config, created_at, updated_at) VALUES (?, ?, ?, ?, 1, 50, ?, ?, ?, ?)`)
-    .run(channelId, "NeuroSync Korea — Series A 2026",
-      "FrontierLabs is preparing NeuroSync Korea's ₩6B Series A pitch targeting Samsung Ventures and Kakao Ventures.",
+    .run(channelId, "NeuroSync Korea — TIPS 2026 Spring Cohort",
+      "FrontierLabs is preparing NeuroSync Korea's TIPS grant application — Ministry of SMEs & Startups, ₩1B R&D grant, deadline 15 April 2026.",
       userId, mapData, mapConfig, now, now);
-  console.log("✓ Created channel: NeuroSync Korea — Series A 2026");
+  console.log("✓ Created channel: NeuroSync Korea — TIPS 2026 Spring Cohort");
 
   db.prepare(`INSERT INTO channel_members (id, channel_id, user_id, role, joined_at) VALUES (?, ?, ?, 'member', ?)`)
     .run(randomUUID(), channelId, userId, now);
@@ -144,31 +144,31 @@ async function main() {
       name: "The Scout",
       color: "#3B82F6",
       x: 3, y: 3,
-      bio: "I scan Korean and global investor databases, score fit against NeuroSync's profile, and identify the highest-probability targets for this round.",
+      bio: "I scan Korean government grant databases, score fit against NeuroSync's technology profile, and identify the highest-probability TIPS cohort and track for this application cycle.",
     },
     {
       name: "The Strategist",
       color: "#10B981",
       x: 13, y: 3,
-      bio: "I define the investment narrative, positioning NeuroSync as a neuro-data infrastructure company — not a device company — to match Samsung Ventures' Next Paradigm thesis.",
+      bio: "I define the grant narrative, positioning NeuroSync as Korea's national cognitive-computing infrastructure layer — not a device company — to match TIPS evaluator priorities around deep-tech IP and domestic manufacturing.",
     },
     {
       name: "The Writer",
       color: "#F59E0B",
       x: 3, y: 14,
-      bio: "I produce the pitch deck, executive summary, and data room. Every claim is backed by a primary source from NeuroSync's uploaded documents.",
+      bio: "I produce the full TIPS application: technical description, impact narrative, work packages, and executive summary. Every claim is backed by a primary source from NeuroSync's uploaded documents and KAIST patent filings.",
     },
     {
       name: "The Architect",
       color: "#8B5CF6",
       x: 13, y: 14,
-      bio: "I build the financial model — raise size, valuation, use of funds, and runway — and stress-test it against Series A benchmarks in the Korean deep-tech market.",
+      bio: "I build the TIPS budget framework — total project cost, government grant share, private co-investment, indirect cost rate, and 24-month milestone plan — ensuring compliance with TIPS ceiling rules.",
     },
     {
       name: "The Team Builder",
       color: "#EF4444",
       x: 24, y: 8,
-      bio: "I identify co-investors, advisors, and board candidates who strengthen NeuroSync's credibility with Samsung Ventures and Kakao Ventures.",
+      bio: "I identify and confirm the required private co-investor, research partners, and advisors that strengthen NeuroSync's eligibility and credibility under the TIPS deep-tech SME track.",
     },
   ];
 
@@ -187,27 +187,27 @@ async function main() {
   const CHAT = [
     {
       npc: "The Scout",
-      content: "I've screened 847 Korean VC contacts. Samsung Ventures scores 94/100 fit — their 'Next Paradigm' fund targets exactly this TRL range. Lead partner: Lee Min-jun. First meeting window: 14 March 2026.",
+      content: "TIPS 2026 Spring Cohort confirmed as primary target. Ministry of SMEs and Startups — government R&D grant up to ₩1B with required private co-investment. NeuroSync scores 91/100 on our eligibility matrix. Application deadline: 15 April 2026.",
     },
     {
       npc: "The Strategist",
-      content: "Positioning locked. NeuroSync is not a BCI device company — it's Korea's first neuro-data infrastructure layer. That framing maps directly to Samsung's thesis and avoids the medical device regulatory question entirely.",
+      content: "Grant narrative locked. NeuroSync is not a BCI device company — it's Korea's national cognitive-computing infrastructure layer. TIPS evaluators prioritise deep-tech with domestic IP and manufacturing potential. We lead with the KAIST patent family and the Gwangju production roadmap.",
     },
     {
       npc: "The Writer",
-      content: "Pitch deck complete: 14 slides, zero filler. Executive summary: one page. Data room indexed: 47 documents. Every claim is backed by a primary source. Ready to send to Samsung Ventures on your instruction.",
+      content: "TIPS application complete: 8 sections, 4,200 words. Technology section grounded in 6 KAIST patent filings. Impact projections validated by Korean Institute of S&T Evaluation. Executive summary: one page, evaluator-ready.",
     },
     {
       npc: "The Architect",
-      content: "Raise: ₩6B at ₩30B pre-money valuation. Use of funds: 35% R&D, 30% clinical validation at KAIST, 25% Korea/Japan expansion, 10% operations. Runway: 32 months. Break-even confirmed at month 26.",
+      content: "Budget framework finalised: ₩1.3B total over 24 months. Government TIPS grant: ₩1B. Private matching: ₩300M committed by NeoPlux Capital. Indirect cost rate: 18% — within TIPS 20% ceiling. Six R&D milestones defined.",
     },
     {
       npc: "The Team Builder",
-      content: "Lead investor confirmed: Samsung Ventures (₩4B). Co-investor confirmed: Kakao Ventures (₩2B). Board advisor added: Prof. Kim Hyun-soo, KAIST BCI Lab Director. All reference checks cleared.",
+      content: "Consortium confirmed. Tech partner: KAIST BCI Lab, Prof. Kim Hyun-soo — letter of intent signed. Private co-investor lead: NeoPlux Capital (₩300M, committed). Advisor: Dr. Park Sung-won, former TIPS Program Director.",
     },
     {
       npc: "The Scout",
-      content: "Follow-up meeting with Samsung Ventures confirmed for 21 March 2026. Term sheet expected within 10 business days. We are on track.",
+      content: "All eligibility criteria under the TIPS deep-tech SME track met. Application package ready for your final review before submission on 15 April 2026.",
     },
   ];
 
@@ -221,32 +221,32 @@ async function main() {
   const TASKS = [
     {
       npc: "The Scout",
-      title: "Confirm Samsung Ventures meeting — 14 March 2026",
-      summary: "Lee Min-jun (Samsung Ventures) confirmed for 14 March. Prepare briefing note: NeuroSync profile, ask, three key differentiators. Send 48 hours before meeting.",
+      title: "Confirm TIPS 2026 Spring Cohort eligibility — deep-tech SME track",
+      summary: "Cross-check NeuroSync against all TIPS eligibility criteria: company age, employee count, private investment lead, and technology readiness level. Output: eligibility confirmation memo. Deadline: 1 April 2026.",
       status: "in_progress",
     },
     {
       npc: "The Strategist",
-      title: "Validate NeuroSync narrative against Kakao Ventures thesis",
-      summary: "Kakao Ventures 2026 fund focuses on AI-native B2B infrastructure. Cross-check NeuroSync positioning deck against their published investment criteria. Flag any gaps.",
+      title: "Validate grant narrative against TIPS evaluation rubric",
+      summary: "TIPS evaluators score on: technological innovation (30pts), commercialisation potential (25pts), team capability (20pts), social impact (15pts), budget validity (10pts). Map our narrative to each criterion. Flag any gaps.",
       status: "in_progress",
     },
     {
       npc: "The Writer",
-      title: "Finalise Series A pitch deck",
-      summary: "14-slide deck. Slides 1-5 complete. Slides 6-10 (traction, team, market) in draft. Slides 11-14 (financials, ask, roadmap) pending Architect sign-off. Target: investor-ready by 10 March 2026.",
+      title: "Finalise TIPS application — 8 sections",
+      summary: "Sections 1-5 complete. Section 6 (work packages) in draft. Sections 7-8 (budget justification, expected outcomes) pending Architect sign-off. Target: submission-ready by 10 April 2026.",
       status: "in_progress",
     },
     {
       npc: "The Architect",
-      title: "Run sensitivity analysis on ₩6B raise",
-      summary: "Model three scenarios: base (₩6B / ₩30B pre-money), conservative (₩4B / ₩22B), stretch (₩8B / ₩38B). Output: runway, break-even, dilution table for each. Needed for slide 12.",
+      title: "Validate budget against TIPS ceiling rules",
+      summary: "Confirm indirect cost rate ≤20%, direct labour ≥40% of total, equipment costs justified. Run three scenarios: base (₩1.3B), reduced (₩1.1B), minimum viable (₩900M). Output: budget justification memo.",
       status: "in_progress",
     },
     {
       npc: "The Team Builder",
-      title: "Secure KAIST IP licensing confirmation letter",
-      summary: "Samsung Ventures requires written confirmation that NeuroSync holds exclusive commercial rights to the KAIST BCI patent family. Contact: Prof. Kim Hyun-soo. Deadline: 7 March 2026.",
+      title: "Secure KAIST letter of intent and NeoPlux co-investment confirmation",
+      summary: "TIPS requires signed letter of intent from research partner (KAIST BCI Lab) and written co-investment commitment from private lead (NeoPlux Capital ₩300M). Both needed before submission. Deadline: 8 April 2026.",
       status: "in_progress",
     },
   ];
@@ -257,7 +257,7 @@ async function main() {
     console.log(`✓ Created task: ${task.title.slice(0, 50)}…`);
   }
 
-  console.log("\n🎉 Demo seed complete — NeuroSync Korea Series A 2026");
+  console.log("\n🎉 Demo seed complete — NeuroSync Korea TIPS 2026 Spring Cohort");
   console.log("   Login at http://localhost:3000 with mark / demo1234");
   db.close();
 }
