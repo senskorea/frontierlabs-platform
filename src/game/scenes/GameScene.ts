@@ -1644,21 +1644,26 @@ export class GameScene extends Phaser.Scene {
       this.clearNpcBubble(data.npcId);
     });
 
-    // Demo Office View mode
-    EventBus.on("demo:npc-speak", (data: { npcName: string; message: string; durationMs: number }) => {
-      const npc = this.npcSprites.find(n => n.name === data.npcName);
-      if (npc) {
-        this.cameras.main.stopFollow();
-        this.cameras.main.pan(npc.pixelX, npc.pixelY, 700, "Power2");
-      }
-      this.showDemoSpeechBubble(data.npcName, data.message, data.durationMs);
+    // Demo Office View — sequenced NPC walk-to-player roleplay
+    EventBus.on("demo:office-start", (data: { steps: Array<{ npcName: string; message: string; durationMs: number }> }) => {
+      this.demoActive = true;
+      this.demoSequence = data.steps;
+      this.demoSequenceIdx = 0;
+      this.cameras.main.stopFollow();
+      this.runNextDemoStep();
     });
     EventBus.on("demo:office-end", () => {
+      this.demoActive = false;
+      for (const [, c] of this.demoBubbles) c.destroy();
+      this.demoBubbles.clear();
+      for (const npc of this.npcSprites) {
+        if (npc.moveState !== "idle") {
+          npc.returnToHome(findPath, (tx, ty) => this.isWalkable(tx, ty) && !this.isTileOccupied(tx, ty));
+        }
+      }
       if (this.player && this.playerReady) {
         this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
       }
-      for (const [, c] of this.demoBubbles) c.destroy();
-      this.demoBubbles.clear();
     });
 
     // Respond to position requests from React (for save-on-leave)
@@ -1686,7 +1691,7 @@ export class GameScene extends Phaser.Scene {
         "npc:deliver-response", "npc:start-return", "npc:approach-and-interact",
         "spritesheet-ready", "socket-ready",
         "chat:bubble", "npc:bubble", "npc:bubble-clear",
-        "demo:npc-speak", "demo:office-end",
+        "demo:office-start", "demo:office-end",
         "request-player-position",
       ];
       for (const ev of gameSceneEvents) {
@@ -2863,6 +2868,9 @@ export class GameScene extends Phaser.Scene {
 
   private npcBubbles: Map<string, Phaser.GameObjects.Container> = new Map();
   private demoBubbles: Map<string, Phaser.GameObjects.Container> = new Map();
+  private demoActive = false;
+  private demoSequence: Array<{ npcName: string; message: string; durationMs: number }> = [];
+  private demoSequenceIdx = 0;
 
   private createBubbleIcon(x: number, y: number, text?: string): Phaser.GameObjects.Container {
     const container = this.add.container(x, y - 44);
@@ -2993,6 +3001,105 @@ export class GameScene extends Phaser.Scene {
           },
         });
       }
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Demo Office View — sequenced NPC roleplay
+  // ---------------------------------------------------------------------------
+
+  private runNextDemoStep(): void {
+    if (!this.demoActive || this.demoSequenceIdx >= this.demoSequence.length) {
+      EventBus.emit("demo:complete", {});
+      if (this.player && this.playerReady) {
+        this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+      }
+      return;
+    }
+
+    const step = this.demoSequence[this.demoSequenceIdx];
+    const npc = this.npcSprites.find(n => n.name === step.npcName);
+
+    if (!npc || !this.player) {
+      this.demoSequenceIdx++;
+      this.runNextDemoStep();
+      return;
+    }
+
+    // Pan camera toward NPC so player can see them start walking
+    this.cameras.main.pan(npc.pixelX, npc.pixelY, 600, "Power2");
+
+    // Reset NPC state if needed
+    if (npc.moveState !== "idle") {
+      npc.moveState = "idle";
+    }
+    this.npcTilePositions.delete(`${npc.homeCol},${npc.homeRow}`);
+
+    // Walk NPC toward player
+    const playerCol = Math.floor(this.player.x / TILE_SIZE);
+    const playerRow = Math.floor(this.player.y / TILE_SIZE);
+    npc.moveTo(
+      playerCol,
+      playerRow,
+      findPath,
+      this.createNpcWalkValidator(npc, playerCol, playerRow),
+    );
+
+    EventBus.emit("demo:npc-walking", { npcName: step.npcName, idx: this.demoSequenceIdx });
+
+    // Poll for arrival
+    const arrivalCheck = this.time.addEvent({
+      delay: 80,
+      repeat: -1,
+      callback: () => {
+        if (!this.demoActive) { arrivalCheck.destroy(); return; }
+        if (npc.moveState === "waiting") {
+          arrivalCheck.destroy();
+          this.onDemoNpcArrived(npc, step);
+        }
+      },
+    });
+  }
+
+  private onDemoNpcArrived(npc: NpcSprite, step: { npcName: string; message: string; durationMs: number }): void {
+    if (!this.demoActive) return;
+
+    // Pan camera to midpoint between NPC and player for a nice framing
+    const midX = this.player ? (npc.pixelX + this.player.x) / 2 : npc.pixelX;
+    const midY = this.player ? (npc.pixelY + this.player.y) / 2 : npc.pixelY;
+    this.cameras.main.pan(midX, midY, 350, "Power2");
+
+    // Show speech bubble
+    this.showDemoSpeechBubble(step.npcName, step.message, step.durationMs);
+    EventBus.emit("demo:npc-speaking", { npcName: step.npcName, idx: this.demoSequenceIdx });
+
+    // After duration: clear bubble, return NPC home, advance sequence
+    this.time.delayedCall(step.durationMs, () => {
+      if (!this.demoActive) return;
+
+      // Clear bubble immediately
+      const bubble = this.demoBubbles.get(step.npcName);
+      if (bubble) { bubble.destroy(); this.demoBubbles.delete(step.npcName); }
+
+      npc.moveState = "idle";
+      npc.returnToHome(findPath, (tx, ty) => this.isWalkable(tx, ty) && !this.isTileOccupied(tx, ty));
+
+      // Poll for return home
+      const returnCheck = this.time.addEvent({
+        delay: 100,
+        repeat: -1,
+        callback: () => {
+          if (!this.demoActive) { returnCheck.destroy(); return; }
+          if (npc.moveState === "idle") {
+            returnCheck.destroy();
+            this.npcTilePositions.add(`${npc.homeCol},${npc.homeRow}`);
+            this.demoSequenceIdx++;
+            this.time.delayedCall(400, () => {
+              if (this.demoActive) this.runNextDemoStep();
+            });
+          }
+        },
+      });
     });
   }
 
