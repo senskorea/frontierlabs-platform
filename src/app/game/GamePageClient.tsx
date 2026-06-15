@@ -225,7 +225,7 @@ function GamePageInner() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [socketConnected, setSocketConnected] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [showDemoPlayer, setShowDemoPlayer] = useState(false);
+  const [demoMode, setDemoMode] = useState<"briefing" | "office" | null>(null);
   const [showSharePopup, setShowSharePopup] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -1633,13 +1633,20 @@ function GamePageInner() {
             </button>
           )}
 
-          {/* Demo play button */}
+          {/* Demo play buttons */}
           <button
-            onClick={() => setShowDemoPlayer(true)}
+            onClick={() => setDemoMode("briefing")}
             className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-emerald-500/10 border border-emerald-400/20 text-caption text-emerald-300 hover:bg-emerald-500/20 transition-colors"
           >
-            <span style={{ fontSize: 10 }}>▶</span>
-            <span>Play Demo</span>
+            <span style={{ fontSize: 10 }}>📋</span>
+            <span>Briefing</span>
+          </button>
+          <button
+            onClick={() => setDemoMode("office")}
+            className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-blue-500/10 border border-blue-400/20 text-caption text-blue-300 hover:bg-blue-500/20 transition-colors"
+          >
+            <span style={{ fontSize: 10 }}>🏢</span>
+            <span>Office View</span>
           </button>
 
           {/* Roster buttons */}
@@ -2489,7 +2496,7 @@ function GamePageInner() {
       )}
 
       {/* Demo player overlay */}
-      {showDemoPlayer && <DemoPlayer onClose={() => setShowDemoPlayer(false)} />}
+      {demoMode && <DemoPlayer initialMode={demoMode} onClose={() => setDemoMode(null)} />}
     </div>
   );
 }

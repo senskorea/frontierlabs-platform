@@ -297,8 +297,8 @@ function OfficeHUD({
 
 type Mode = "briefing" | "office";
 
-export default function DemoPlayer({ onClose }: { onClose: () => void }) {
-  const [mode, setMode] = useState<Mode>("briefing");
+export default function DemoPlayer({ initialMode = "briefing", onClose }: { initialMode?: Mode; onClose: () => void }) {
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [phase, setPhase] = useState<"init" | "agents" | "done">("init");
   const [activeIdx, setActiveIdx] = useState(-1);
   const [doneSet, setDoneSet] = useState<Set<number>>(new Set());
